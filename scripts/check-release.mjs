@@ -36,6 +36,11 @@ if (process.env.GITHUB_ACTIONS === "true") {
 	const commit = process.env.GITHUB_SHA;
 	if (!commit) throw new Error("GitHub Actions did not provide GITHUB_SHA");
 	try {
+		try {
+			execFileSync("git", ["fetch", "origin", "main"], { stdio: "ignore" });
+		} catch {
+			// ignore fetch error if already available
+		}
 		execFileSync("git", ["merge-base", "--is-ancestor", commit, "origin/main"], { stdio: "ignore" });
 	} catch {
 		throw new Error(`release commit ${commit} is not reachable from origin/main`);
