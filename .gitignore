@@ -3,6 +3,7 @@ dist/
 coverage/
 *.log
 *.tgz
+RELEASE_NOTES.md
 .DS_Store
 .env
 .env.*
