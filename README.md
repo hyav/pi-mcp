@@ -59,7 +59,7 @@ The fallback global path is `~/.config/mcp/mcp.json`. Trusted project files (`.p
 - `/mcp <server>`: connect or disconnect a server
 - `/mcp reconnect <server>`: reconnect and refresh metadata
 
-The Agent-facing `mcp` proxy searches capabilities, reports status, connects servers, invokes exact tools, and lists or reads resources. Duplicate tool names require an explicit server. Public metadata may be cached in `~/.pi/agent/mcp-cache.json`; private metadata and authorization fingerprints remain in memory.
+The Agent-facing `mcp` proxy searches capabilities, reports status, connects servers, invokes exact tools, and lists or reads resources. Duplicate tool names require an explicit server. Public metadata may be cached in `<agent-dir>/extensions/pi-mcp/mcp-cache.json`; private metadata and authorization fingerprints remain in memory.
 
 ## Before you use it
 

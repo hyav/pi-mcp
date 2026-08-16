@@ -1,12 +1,11 @@
 // cache.ts
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { getAgentDir } from "@earendil-works/pi-coding-agent";
-import { writeLog } from "./logger.js";
+import { getExtensionDataDir, writeLog } from "./logger.js";
 import type { McpCacheHints, McpResource, McpTool, MetadataCache, ServerCacheEntry } from "./types.js";
 
 export function getCacheFilePath(): string {
-	return join(getAgentDir(), "mcp-cache.json");
+	return join(getExtensionDataDir(), "mcp-cache.json");
 }
 const CACHE_VERSION = 2 as const;
 const DEFAULT_LEGACY_CACHE_TTL_MS = 5 * 60 * 1000;

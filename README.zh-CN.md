@@ -59,7 +59,7 @@ pi install npm:@hyav/pi-mcp
 - `/mcp <server>`：连接或断开服务器
 - `/mcp reconnect <server>`：重连并刷新元数据
 
-面向 Agent 的 `mcp` 代理可以搜索能力、报告状态、连接服务器、调用精确工具，以及列出或读取资源。工具重名时必须显式指定服务器。公共元数据可以缓存到 `~/.pi/agent/mcp-cache.json`；私有元数据和授权指纹仅保留在内存中。
+面向 Agent 的 `mcp` 代理可以搜索能力、报告状态、连接服务器、调用精确工具，以及列出或读取资源。工具重名时必须显式指定服务器。公共元数据可以缓存到 `<agent-dir>/extensions/pi-mcp/mcp-cache.json`；私有元数据和授权指纹仅保留在内存中。
 
 ## 使用须知
 

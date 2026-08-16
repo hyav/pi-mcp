@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, realpathSync, renameSync, unlinkSy
 import { homedir } from "node:os";
 import { dirname, join, posix, resolve, win32 } from "node:path";
 import { CONFIG_DIR_NAME, getAgentDir } from "@earendil-works/pi-coding-agent";
-import { registerSensitiveLogValues, writeLog } from "./logger.js";
+import { getExtensionDataDir, registerSensitiveLogValues, writeLog } from "./logger.js";
 import type { ConfigSource, McpConfig, ServerDefinition } from "./types.js";
 
 export function getGlobalConfigPaths(): string[] {
@@ -41,7 +41,7 @@ export function getThirdPartyIdePaths(
 
 const THIRD_PARTY_IDE_PATHS = getThirdPartyIdePaths();
 export function getTrustFilePath(): string {
-	return join(getAgentDir(), "mcp-trusted-workspaces.json");
+	return join(getExtensionDataDir(), "mcp-trusted-workspaces.json");
 }
 
 function safeRealpath(p: string): string {

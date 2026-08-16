@@ -1,10 +1,33 @@
 // logger.ts
-import { appendFileSync, chmodSync, existsSync, mkdirSync } from "node:fs";
+import { appendFileSync, chmodSync, existsSync, mkdirSync, renameSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { getAgentDir } from "@earendil-works/pi-coding-agent";
 
+/** Directory for runtime-produced files, next to the extension install location. */
+export function getExtensionDataDir(): string {
+	return join(getAgentDir(), "extensions", "pi-mcp");
+}
+
 export function getLogFilePath(): string {
-	return join(getAgentDir(), "mcp.log");
+	return join(getExtensionDataDir(), "mcp.log");
+}
+
+const LEGACY_DATA_FILE_NAMES = ["mcp.log", "mcp-cache.json", "mcp-trusted-workspaces.json"] as const;
+
+/** One-time move of files written by pre-0.2 releases from the agent dir root into the extension data dir. */
+export function migrateLegacyDataFiles(): void {
+	for (const name of LEGACY_DATA_FILE_NAMES) {
+		const oldPath = join(getAgentDir(), name);
+		const newPath = join(getExtensionDataDir(), name);
+		if (!existsSync(oldPath) || existsSync(newPath)) continue;
+		try {
+			mkdirSync(dirname(newPath), { recursive: true, mode: 0o700 });
+			renameSync(oldPath, newPath);
+			writeLog(`Migrated legacy data file ${name} to ${newPath}.`, "INFO");
+		} catch (err) {
+			writeLog(`Failed to migrate legacy data file ${name}: ${err}`, "ERROR");
+		}
+	}
 }
 const sensitiveValues = new Set<string>();
 const REDACTED = "[REDACTED]";

@@ -9,7 +9,7 @@ import { getFreshServerCacheEntry, loadMetadataCache } from "./cache.js";
 import { McpClientPool } from "./client.js";
 import { loadMcpConfig } from "./config.js";
 import { classifyExecutionMode } from "./dispatch-classifier.js";
-import { writeLog } from "./logger.js";
+import { migrateLegacyDataFiles, writeLog } from "./logger.js";
 import { refreshServerMetadata } from "./metadata.js";
 import { cleanupSpilledTempDirs, handleMcpProxy } from "./proxy.js";
 import { getServerCacheFingerprint, getServerConnectionFingerprint } from "./server-identity.js";
@@ -186,6 +186,7 @@ function formatMcpToolResultSummary(content: any[], theme: any): string {
 }
 
 export default function registerMcp(pi: ExtensionAPI) {
+	migrateLegacyDataFiles();
 	const config = loadMcpConfig();
 	const cache = loadMetadataCache();
 	const serverNames = Object.keys(config.mcpServers);

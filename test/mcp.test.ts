@@ -7,7 +7,7 @@ import { getCacheFilePath, getFreshServerCacheEntry, loadMetadataCache, updateSe
 import { SimpleMcpClient } from "../src/client.js";
 import { getGlobalConfigPaths, getThirdPartyIdePaths, getTrustFilePath, loadMcpConfig } from "../src/config.js";
 import registerMcp, { resolveToolTarget } from "../src/index.js";
-import { getLogFilePath, redactLogMessage, setSensitiveLogValues } from "../src/logger.js";
+import { getLogFilePath, migrateLegacyDataFiles, redactLogMessage, setSensitiveLogValues } from "../src/logger.js";
 import { limitMcpText, normalizeMcpResponse } from "../src/proxy.js";
 import { BoundedNdjsonParser } from "../src/stdio-transport.js";
 import {
@@ -187,7 +187,7 @@ test("MCP metadata cache never persists expanded server credentials", async () =
 	const { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } = await import("node:fs");
 	const configDir = getAgentDir();
 	const configPath = join(configDir, "mcp.json");
-	const cachePath = join(configDir, "mcp-cache.json");
+	const cachePath = getCacheFilePath();
 	const backup = existsSync(configPath) ? readFileSync(configPath, "utf8") : undefined;
 	const sentinel = "review-cache-secret-sentinel";
 	const serverName = `cache-secret-${process.pid}`;
@@ -234,7 +234,7 @@ test("private MCP metadata honors cache hints without being persisted", async ()
 	const { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } = await import("node:fs");
 	const configDir = getAgentDir();
 	const configPath = join(configDir, "mcp.json");
-	const cachePath = join(configDir, "mcp-cache.json");
+	const cachePath = getCacheFilePath();
 	const backup = existsSync(configPath) ? readFileSync(configPath, "utf8") : undefined;
 	const serverName = `private-cache-${process.pid}`;
 	const mockServerPath = join(import.meta.dirname, "mock-server.js");
@@ -2339,12 +2339,42 @@ test("XDG compliance - log, cache, config, and trust paths honor getAgentDir and
 	const customAgentDir = "/tmp/custom-xdg-agent-dir";
 	try {
 		process.env.PI_CODING_AGENT_DIR = customAgentDir;
-		assert.strictEqual(getLogFilePath(), join(customAgentDir, "mcp.log"));
-		assert.strictEqual(getCacheFilePath(), join(customAgentDir, "mcp-cache.json"));
-		assert.strictEqual(getTrustFilePath(), join(customAgentDir, "mcp-trusted-workspaces.json"));
+		assert.strictEqual(getLogFilePath(), join(customAgentDir, "extensions", "pi-mcp", "mcp.log"));
+		assert.strictEqual(getCacheFilePath(), join(customAgentDir, "extensions", "pi-mcp", "mcp-cache.json"));
+		assert.strictEqual(
+			getTrustFilePath(),
+			join(customAgentDir, "extensions", "pi-mcp", "mcp-trusted-workspaces.json"),
+		);
 		assert.strictEqual(getGlobalConfigPaths()[0], join(customAgentDir, "mcp.json"));
 	} finally {
 		if (originalEnv === undefined) delete process.env.PI_CODING_AGENT_DIR;
 		else process.env.PI_CODING_AGENT_DIR = originalEnv;
+	}
+});
+
+test("migrateLegacyDataFiles moves legacy agent-dir files into the extension data dir once", async () => {
+	const { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } = await import("node:fs");
+	const { tmpdir } = await import("node:os");
+	const originalEnv = process.env.PI_CODING_AGENT_DIR;
+	const tempRoot = mkdtempSync(join(tmpdir(), "pi-mcp-migrate-"));
+	try {
+		process.env.PI_CODING_AGENT_DIR = tempRoot;
+		const dataDir = join(tempRoot, "extensions", "pi-mcp");
+		const legacyLogPath = join(tempRoot, "mcp.log");
+		const legacyCachePath = join(tempRoot, "mcp-cache.json");
+		writeFileSync(legacyLogPath, "legacy log");
+		writeFileSync(legacyCachePath, "legacy cache");
+		// A fresh-format file already exists: the legacy copy must not overwrite it
+		mkdirSync(dataDir, { recursive: true });
+		writeFileSync(join(dataDir, "mcp-cache.json"), "fresh cache");
+		migrateLegacyDataFiles();
+		assert.strictEqual(existsSync(legacyLogPath), false, "legacy mcp.log must be moved");
+		assert.strictEqual(existsSync(join(dataDir, "mcp.log")), true, "mcp.log must land in the extension data dir");
+		assert.strictEqual(existsSync(legacyCachePath), true, "legacy cache must stay when a fresh file already exists");
+		assert.strictEqual(readFileSync(join(dataDir, "mcp-cache.json"), "utf8"), "fresh cache");
+	} finally {
+		if (originalEnv === undefined) delete process.env.PI_CODING_AGENT_DIR;
+		else process.env.PI_CODING_AGENT_DIR = originalEnv;
+		rmSync(tempRoot, { recursive: true, force: true });
 	}
 });
