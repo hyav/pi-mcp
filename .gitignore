@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+*.log
+*.tgz
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Local MCP and Pi state
+.pi/
+.mcp.json
