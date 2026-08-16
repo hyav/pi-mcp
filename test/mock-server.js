@@ -35,10 +35,15 @@ rl.on("line", async (line) => {
 		}
 
 		if (process.env.MOCK_DISCOVER_ERROR === "32022" && method === "server/discover") {
+			const supported = (process.env.MOCK_DISCOVER_32022_SUPPORTED || "2025-11-25").split(",");
 			const response = {
 				jsonrpc: "2.0",
 				id,
-				error: { code: -32022, message: "Unsupported version" },
+				error: {
+					code: -32022,
+					message: "Unsupported version",
+					data: { supported, requested: "2026-07-28" },
+				},
 			};
 			process.stdout.write(`${JSON.stringify(response)}\n`);
 			return;

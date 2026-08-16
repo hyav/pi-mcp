@@ -393,7 +393,7 @@ export class SimpleMcpClient {
 			// These are recognized modern-protocol errors, not evidence of a legacy server.
 			if (code === -32020 || code === -32021) throw err;
 			if (code === -32022) {
-				const supportedVersions = (err as any).supportedVersions;
+				const supportedVersions = (err as any).data?.supported ?? (err as any).supportedVersions;
 				if (Array.isArray(supportedVersions) && supportedVersions.includes(LATEST_PROTOCOL_VERSION)) {
 					throw err;
 				}
@@ -476,6 +476,7 @@ export class SimpleMcpClient {
 			const codeStr = response.error.code !== undefined ? `[${response.error.code}] ` : "";
 			const err = new Error(`${codeStr}${response.error.message || "Unknown MCP Error"}`);
 			(err as any).code = response.error.code;
+			(err as any).data = response.error.data;
 			handler.reject(err);
 		} else {
 			handler.resolve(response.result);
@@ -636,6 +637,7 @@ export class SimpleMcpClient {
 					const codeStr = syncResponse.error.code !== undefined ? `[${syncResponse.error.code}] ` : "";
 					const err = new Error(`${codeStr}${syncResponse.error.message || "Unknown MCP Error"}`);
 					(err as any).code = syncResponse.error.code;
+					(err as any).data = syncResponse.error.data;
 					activeHandler.reject(err);
 				} else {
 					activeHandler.resolve(syncResponse.result);

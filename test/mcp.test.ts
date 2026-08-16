@@ -2260,6 +2260,20 @@ test("2026-07-28 - server/discover returns -32022 falls back to legacy handshake
 	await client.close();
 });
 
+test("2026-07-28 - server/discover -32022 with data.supported claiming the latest version surfaces the error", async () => {
+	const mockServerPath = join(import.meta.dirname, "mock-server.js");
+	const client = new SimpleMcpClient("mock-discover-32022-contradiction", "node", [mockServerPath], {
+		MOCK_DISCOVER_ERROR: "32022",
+		MOCK_DISCOVER_32022_SUPPORTED: "2026-07-28",
+	});
+
+	// A server that returns UnsupportedProtocolVersionError while claiming to
+	// support the requested version is a contradiction: do not fall back, surface it.
+	await assert.rejects(client.connect(), (err: any) => err.code === -32022);
+
+	await client.close();
+});
+
 test("2026-07-28 - extensions registration and logLevel in _meta when debug is enabled", async () => {
 	const mockServerPath = join(import.meta.dirname, "mock-server.js");
 	const client = new SimpleMcpClient(
