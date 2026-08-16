@@ -1,6 +1,6 @@
 {
   "name": "@hyav/pi-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hyav/pi-mcp.git"
@@ -26,10 +26,10 @@
     "check": "biome check . && npm run typecheck",
     "audit:runtime": "npm audit --omit=dev --audit-level=high",
     "audit:all": "npm audit --audit-level=high",
-		"artifact:check": "node scripts/check-package.mjs",
-		"release:check": "node scripts/check-release.mjs",
-		"release:notes": "node scripts/write-release-notes.mjs",
-		"prepublishOnly": "npm run audit:runtime && npm run audit:all && npm run release:check && npm run check && npm test && npm run artifact:check"
+    "artifact:check": "node scripts/check-package.mjs",
+    "release:check": "node scripts/check-release.mjs",
+    "release:notes": "node scripts/write-release-notes.mjs",
+    "prepublishOnly": "npm run audit:runtime && npm run audit:all && npm run release:check && npm run check && npm test && npm run artifact:check"
   },
   "engines": {
     "node": ">=22.19.0"
