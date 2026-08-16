@@ -27,7 +27,8 @@
     "audit:runtime": "npm audit --omit=dev --audit-level=high",
     "audit:all": "npm audit --audit-level=high",
     "artifact:check": "node scripts/check-package.mjs",
-    "prepublishOnly": "npm run audit:runtime && npm run audit:all && npm run check && npm test && npm run artifact:check"
+    "release:check": "node scripts/check-release.mjs",
+    "prepublishOnly": "npm run audit:runtime && npm run audit:all && npm run release:check && npm run check && npm test && npm run artifact:check"
   },
   "engines": {
     "node": ">=22.19.0"
@@ -66,4 +67,3 @@
     "url": "https://github.com/hyav/pi-mcp/issues"
   }
 }
-

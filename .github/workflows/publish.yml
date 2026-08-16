@@ -5,23 +5,35 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: write
-  id-token: write
+permissions: {}
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: '24'
           registry-url: https://registry.npmjs.org
-          cache: npm
+          package-manager-cache: false
+
+      - name: Prepare npm Trusted Publishing
+        run: |
+          npm install --global npm@11.5.1
+          node --version
+          npm --version
+
+      - name: Verify release identity
+        run: npm run release:check
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
@@ -37,13 +49,66 @@ jobs:
       - name: Pack tarball
         run: npm pack
 
-      - name: Publish package to npm
-        run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Create release checksum
+        run: sha256sum ./*.tgz > SHA256SUMS
+
+      - name: Check npm registry version
+        id: registry_version
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_name="$(node -p 'JSON.parse(require("fs").readFileSync("package.json", "utf8")).name')"
+          package_version="$(node -p 'JSON.parse(require("fs").readFileSync("package.json", "utf8")).version')"
+          package_spec="${package_name}@${package_version}"
+          if npm view "$package_spec" version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
+            git_head="$(npm view "$package_spec" gitHead --registry=https://registry.npmjs.org --json)"
+            git_head="${git_head//\"/}"
+            if [ "$git_head" != "${GITHUB_SHA}" ]; then
+              echo "${package_spec} already exists with gitHead ${git_head}; expected ${GITHUB_SHA}" >&2
+              exit 1
+            fi
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "${package_spec} is already published from this release commit; skipping duplicate publish"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish package to npm via Trusted Publishing
+        if: steps.registry_version.outputs.published != 'true'
+        run: npm publish --access public
+
+      - name: Upload release assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-release-assets
+          path: |
+            ./*.tgz
+            SHA256SUMS
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Download release assets
+        uses: actions/download-artifact@v4
+        with:
+          name: npm-release-assets
+          path: release-assets
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
-          files: "*.tgz"
-          generate_release_notes: true
+          body_path: CHANGELOG.md
+          files: |
+            release-assets/*.tgz
+            release-assets/SHA256SUMS
+          generate_release_notes: false
