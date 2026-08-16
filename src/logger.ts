@@ -52,7 +52,7 @@ export function writeLog(message: string, level: "INFO" | "WARN" | "ERROR" | "DE
 	} catch (err) {
 		// Write to stderr only — never corrupt stdout which carries JSON-RPC
 		try {
-			process.stderr.write(`[MCP Kit Logger] Write failed: ${err}\n`);
+			process.stderr.write(`[Pi MCP Logger] Write failed: ${err}\n`);
 		} catch {
 			// Absolute last resort: truly silent
 		}

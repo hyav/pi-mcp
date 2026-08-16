@@ -6,7 +6,7 @@ import { readBoundedResponseText } from "../src/bounded-response.js";
 import { getCacheFilePath, getFreshServerCacheEntry, loadMetadataCache, updateServerCache } from "../src/cache.js";
 import { SimpleMcpClient } from "../src/client.js";
 import { getGlobalConfigPaths, getThirdPartyIdePaths, getTrustFilePath, loadMcpConfig } from "../src/config.js";
-import registerMcpKit, { resolveToolTarget } from "../src/index.js";
+import registerMcp, { resolveToolTarget } from "../src/index.js";
 import { getLogFilePath, redactLogMessage, setSensitiveLogValues } from "../src/logger.js";
 import { limitMcpText, normalizeMcpResponse } from "../src/proxy.js";
 import { BoundedNdjsonParser } from "../src/stdio-transport.js";
@@ -208,7 +208,7 @@ test("MCP metadata cache never persists expanded server credentials", async () =
 	);
 
 	let gateway: any;
-	registerMcpKit({
+	registerMcp({
 		registerTool(tool: any) {
 			gateway = tool;
 		},
@@ -254,7 +254,7 @@ test("private MCP metadata honors cache hints without being persisted", async ()
 	);
 
 	let gateway: any;
-	registerMcpKit({
+	registerMcp({
 		registerTool(tool: any) {
 			gateway = tool;
 		},
@@ -368,7 +368,7 @@ test("/mcp server connection refreshes the metadata cache", async () => {
 	mkdirSync(configDir, { recursive: true });
 	writeFileSync(configPath, JSON.stringify({ mcpServers: { [serverName]: definition } }));
 	let command: any;
-	registerMcpKit({
+	registerMcp({
 		registerTool() {},
 		registerCommand(_name: string, value: any) {
 			command = value;
@@ -403,7 +403,7 @@ test("/mcp server connection refreshes the metadata cache", async () => {
 
 test("MCP gateway exposes compact discovery results to the agent", async () => {
 	let gateway: any;
-	registerMcpKit({
+	registerMcp({
 		registerTool(tool: any) {
 			gateway = tool;
 		},
@@ -1699,7 +1699,7 @@ test("the mcp gateway propagates Pi tool cancellation to the selected server", a
 	);
 
 	let gateway: any;
-	registerMcpKit({
+	registerMcp({
 		registerTool(tool: any) {
 			gateway = tool;
 		},

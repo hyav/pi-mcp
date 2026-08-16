@@ -1,5 +1,5 @@
 /**
- * Core type definitions for the pi-mcp-kit gateway.
+ * Core type definitions for the pi-mcp gateway.
  *
  * @module types
  */

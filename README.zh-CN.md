@@ -1,4 +1,4 @@
-# @hyav/pi-mcp
+# pi-mcp
 
 [English](README.md)
 

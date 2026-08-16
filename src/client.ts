@@ -128,7 +128,7 @@ export class SimpleMcpClient {
 	private _extensions?: McpExtensionDeclaration;
 
 	private static readonly CLIENT_INFO = {
-		name: "pi-mcp-kit",
+		name: "pi-mcp",
 		version: pkg.version || "1.0.0",
 	};
 

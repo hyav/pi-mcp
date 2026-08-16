@@ -185,7 +185,7 @@ function formatMcpToolResultSummary(content: any[], theme: any): string {
 	);
 }
 
-export default function mcpKit(pi: ExtensionAPI) {
+export default function registerMcp(pi: ExtensionAPI) {
 	const config = loadMcpConfig();
 	const cache = loadMetadataCache();
 	const serverNames = Object.keys(config.mcpServers);
@@ -213,13 +213,13 @@ export default function mcpKit(pi: ExtensionAPI) {
 		const pool = McpClientPool.getInstance();
 		await pool.closeAll();
 		await cleanupSpilledTempDirs();
-		writeLog("Session shutdown. Cleaned up MCP Kit connection pool and spilled temp dirs.", "INFO");
+		writeLog("Session shutdown. Cleaned up Pi MCP connection pool and spilled temp dirs.", "INFO");
 	});
 
 	// 3. Register Gateway Tool (mcp)
 	(pi.registerTool as any)({
 		name: "mcp",
-		label: "MCP Kit",
+		label: "Pi MCP",
 		description: gatewayDescription,
 		promptSnippet: detailedPromptSnippet,
 		parameters: Type.Object({
@@ -697,7 +697,7 @@ export default function mcpKit(pi: ExtensionAPI) {
 
 	// 4. Command /mcp (Interactive Terminal Control Panel)
 	pi.registerCommand("mcp", {
-		description: "Manage Pi MCP Kit Connections",
+		description: "Manage Pi MCP Connections",
 		getArgumentCompletions: (prefix: string): AutocompleteItem[] | null => {
 			const trimmed = prefix.trim().toLowerCase();
 			const pool = McpClientPool.getInstance();
@@ -724,7 +724,7 @@ export default function mcpKit(pi: ExtensionAPI) {
 			const targetName = isReconnect ? argv[1] || "" : subcommand;
 
 			if (subcommand === "help") {
-				const helpMsg = `Pi MCP Kit Commands:
+				const helpMsg = `Pi MCP Commands:
   /mcp                         - Open interactive MCP server control panel (TUI)
   /mcp <serverName>            - Toggle connect/disconnect for a server
   /mcp reconnect <serverName>  - Reconnect and refresh metadata for a server`;
@@ -882,7 +882,7 @@ export default function mcpKit(pi: ExtensionAPI) {
 			}
 
 			if (subcommand === "") {
-				const helpMsg = `Pi MCP Kit:\n  Please run /mcp in UI to open interactive control panel.\n  Or run /mcp <serverName> to toggle connection.`;
+				const helpMsg = `Pi MCP:\n  Please run /mcp in UI to open interactive control panel.\n  Or run /mcp <serverName> to toggle connection.`;
 				console.log(helpMsg);
 				return;
 			}
