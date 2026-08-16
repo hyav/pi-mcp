@@ -8,9 +8,16 @@ const packageJson = JSON.parse(readFileSync(join(repositoryRoot, "package.json")
 const changelog = readFileSync(join(repositoryRoot, "CHANGELOG.md"), "utf8");
 const expectedTag = `v${packageJson.version}`;
 const tagName = process.env.GITHUB_REF_NAME ?? process.env.RELEASE_TAG;
+const isBootstrapVersion = /^0\.1\.0-oidc-bootstrap\.\d+$/.test(packageJson.version);
 
-if (!changelog.split(/\r?\n/).some((line) => line.startsWith(`## ${packageJson.version} -`))) {
+if (!isBootstrapVersion && !changelog.split(/\r?\n/).some((line) => line.startsWith(`## ${packageJson.version} -`))) {
 	throw new Error(`CHANGELOG.md has no release entry for ${packageJson.version}`);
+}
+
+if (isBootstrapVersion) {
+	if (tagName) throw new Error(`bootstrap version ${packageJson.version} must be published without a Git tag`);
+	console.log(`bootstrap release identity ok: ${packageJson.name}@${packageJson.version}`);
+	process.exit(0);
 }
 
 if (!tagName) {
